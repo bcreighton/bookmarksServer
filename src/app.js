@@ -146,6 +146,29 @@ app.post('/bookmark', (req, res) => {
     .json(bookmark)
 })
 
+// DELETE ROUTE
+app.delete('/bookmark/:id', (req, res) => {
+  const { id } = req.params
+
+  const bookmarkIndex = bookmarks.findIndex(bI => bI.id == id)
+
+  // VERIFY BOOKMARK ID EXISTS IN CURRENT DATA
+  if (bookmarkIndex === -1) {
+    logger.error(`Bookmark with ID:${id} not found.`)
+    return res
+      .status(404)
+      .send('Not Found')
+  }
+
+  // REMOVE BOOKMARK BY ID
+  bookmarks.splice(bookmarkIndex, 1)
+
+  logger.info(`Bookmark with ID: ${id} deleted`)
+  res
+    .status(204)
+    .end()
+})
+
 app.use(function errorHandler(error, req, res, next) {
   let response
   if (NODE_ENV === 'production') {
