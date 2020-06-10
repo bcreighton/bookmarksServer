@@ -4,8 +4,7 @@ const morgan = require('morgan')
 const cors = require('cors')
 const helmet = require('helmet')
 const { NODE_ENV } = require('./config')
-const winston = require('winston')
-const { v4: uuid } = require('uuid')
+const bookmarkRouter = require('./bookmark/bookmarkRouter')
 
 const app = express()
 
@@ -16,47 +15,6 @@ const morganOption = (NODE_ENV === 'production')
 app.use(morgan(morganOption))
 app.use(helmet())
 app.use(cors())
-app.use(express.json())
-
-// DATA STRUCTURE
-const bookmarks = [
-  {
-    id: 0,
-    title: 'Google',
-    url: 'http://www.google.com',
-    rating: '3',
-    desc: 'Internet-related services and products.'
-  },
-  {
-    id: 1,
-    title: 'Thinkful',
-    url: 'http://www.thinkful.com',
-    rating: '5',
-    desc: '1-on-1 learning to accelerate your way to a new high-growth tech career!'
-  },
-  {
-    id: 2,
-    title: 'Github',
-    url: 'http://www.github.com',
-    rating: '4',
-    desc: 'brings together the world\'s largest community of developers.'
-  }
-]
-
-// SET UP WINSTON LOGGER
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.json(),
-  transports: [
-    new winston.transports.File({ filename: 'info.log' })
-  ]
-})
-
-if (NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: winston.format.simple()
-  }))
-}
 
 // API AUTHENTICATION CHECK
 app.use(function validateBearerToken(req, res, next) {
@@ -72,101 +30,11 @@ app.use(function validateBearerToken(req, res, next) {
 })
 
 // ROUTES
+app.use(bookmarkRouter)
+
 //GET ROUTES
 app.get('/', (req, res) => {
   res.send('Hello, bookmarks!')
-})
-
-app.get('/bookmark', (req, res) => {
-  res.
-    json(bookmarks)
-})
-
-app.get('/bookmark/:id', (req, res) => {
-  const { id } = req.params
-  const bookmark = bookmarks.find(b => b.id == id)
-
-  // validate the bookmark exists in current data
-  if (!bookmark) {
-    logger.error(`Bookmark with ID:${id} not found.`)
-    return res
-      .status(404)
-      .send('Bookmark Not Found')
-  }
-
-  res
-    .json(bookmark)
-})
-
-// POST ROUTES
-app.post('/bookmark', (req, res) => {
-  const { title, url, rating = 1, desc = '' } = req.body
-
-  if (!title) {
-    logger.error('Title is required')
-    return res
-      .status(400)
-      .send('Invalid data')
-  }
-
-  if (!url) {
-    logger.error('URL is required')
-    return res
-      .status(400)
-      .send('Invalid data')
-  }
-
-  if (rating < 1 || rating > 5) {
-    logger.error('Raiting must be between 1 and 5')
-    return res
-      .status(400)
-      .send('Invalid data')
-  }
-
-  // GET NEW ID
-  const id = uuid()
-
-  const bookmark = {
-    id,
-    title,
-    url,
-    rating,
-    desc,
-  }
-
-  //ADD NEW BOOKMARK TO DATA
-  bookmarks.push(bookmark)
-
-  // LOG CREATION OF NEW BOOKMARK
-  logger.info(`Bookmark with id ${id} created`)
-
-  res
-    .status(201)
-    .location(`http://localhost:8000/bookmark/${id}`)
-    .json(bookmark)
-})
-
-// DELETE ROUTE
-app.delete('/bookmark/:id', (req, res) => {
-  const { id } = req.params
-
-  const bookmarkIndex = bookmarks.findIndex(bI => bI.id == id)
-
-  // VERIFY BOOKMARK ID EXISTS IN CURRENT DATA
-  if (bookmarkIndex === -1) {
-    logger.error(`Bookmark with ID:${id} not found.`)
-    return res
-      .status(404)
-      .send('Not Found')
-  }
-
-  // REMOVE BOOKMARK BY ID
-  bookmarks.splice(bookmarkIndex, 1)
-
-  logger.info(`Bookmark with ID: ${id} deleted`)
-  res
-    .status(204)
-    .end()
 })
 
 app.use(function errorHandler(error, req, res, next) {
