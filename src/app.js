@@ -98,6 +98,54 @@ app.get('/bookmark/:id', (req, res) => {
     .json(bookmark)
 })
 
+// POST ROUTES
+app.post('/bookmark', (req, res) => {
+  const { title, url, rating = 1, desc = '' } = req.body
+
+  if (!title) {
+    logger.error('Title is required')
+    return res
+      .status(400)
+      .send('Invalid data')
+  }
+
+  if (!url) {
+    logger.error('URL is required')
+    return res
+      .status(400)
+      .send('Invalid data')
+  }
+
+  if (rating < 1 || rating > 5) {
+    logger.error('Raiting must be between 1 and 5')
+    return res
+      .status(400)
+      .send('Invalid data')
+  }
+
+  // GET NEW ID
+  const id = uuid()
+
+  const bookmark = {
+    id,
+    title,
+    url,
+    rating,
+    desc,
+  }
+
+  //ADD NEW BOOKMARK TO DATA
+  bookmarks.push(bookmark)
+
+  // LOG CREATION OF NEW BOOKMARK
+  logger.info(`Bookmark with id ${id} created`)
+
+  res
+    .status(201)
+    .location(`http://localhost:8000/bookmark/${id}`)
+    .json(bookmark)
+})
+
 app.use(function errorHandler(error, req, res, next) {
   let response
   if (NODE_ENV === 'production') {
