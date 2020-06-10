@@ -5,6 +5,7 @@ const cors = require('cors')
 const helmet = require('helmet')
 const { NODE_ENV } = require('./config')
 const winston = require('winston')
+const { v4: uuid } = require('uuid')
 
 const app = express()
 
@@ -15,6 +16,32 @@ const morganOption = (NODE_ENV === 'production')
 app.use(morgan(morganOption))
 app.use(helmet())
 app.use(cors())
+app.use(express.json())
+
+// DATA STRUCTURE
+const bookmarks = [
+  {
+    id: 0,
+    title: 'Google',
+    url: 'http://www.google.com',
+    rating: '3',
+    desc: 'Internet-related services and products.'
+  },
+  {
+    id: 1,
+    title: 'Thinkful',
+    url: 'http://www.thinkful.com',
+    rating: '5',
+    desc: '1-on-1 learning to accelerate your way to a new high-growth tech career!'
+  },
+  {
+    id: 2,
+    title: 'Github',
+    url: 'http://www.github.com',
+    rating: '4',
+    desc: 'brings together the world\'s largest community of developers.'
+  }
+]
 
 // SET UP WINSTON LOGGER
 const logger = winston.createLogger({
@@ -44,8 +71,31 @@ app.use(function validateBearerToken(req, res, next) {
   next()
 })
 
+// ROUTES
+//GET ROUTES
 app.get('/', (req, res) => {
   res.send('Hello, bookmarks!')
+})
+
+app.get('/bookmark', (req, res) => {
+  res.
+    json(bookmarks)
+})
+
+app.get('/bookmark/:id', (req, res) => {
+  const { id } = req.params
+  const bookmark = bookmarks.find(b => b.id == id)
+
+  // validate the bookmark exists in current data
+  if (!bookmark) {
+    logger.error(`Bookmark with ID:${id} not found.`)
+    return res
+      .status(404)
+      .send('Bookmark Not Found')
+  }
+
+  res
+    .json(bookmark)
 })
 
 app.use(function errorHandler(error, req, res, next) {
