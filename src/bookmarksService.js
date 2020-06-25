@@ -1,6 +1,8 @@
+const Knex = require('knex');
+
 const BookmarksService = {
-  getAllBookmarks() {
-    return 'all the bookmarks!!'
+  getAllBookmarks(knex) {
+    return knex.select('*').from('bookmarktable')
   }
 }
 
