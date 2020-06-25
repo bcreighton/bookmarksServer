@@ -1,4 +1,4 @@
-INSERT INTO bookmarkTable (title, url, description, rating)
+INSERT INTO bookmarktable (title, url, description, rating)
   VALUES
     (
       'Google',
