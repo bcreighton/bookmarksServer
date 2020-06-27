@@ -38,21 +38,101 @@ describe.only('Bookmarks service object', () => {
   })
 
   before(() => db('bookmarktable').truncate())
-
-  before(() => {
-    return db
-      .into('bookmarktable')
-      .insert(testBookmarks)
-  })
+  afterEach(() => db('bookmarktable').truncate())
 
   after(() => db.destroy())
 
-  context(`getAllBookmarks()`, () => {
-    it(`resolves all bookmarks from 'bookmarktable' table`, () => {
-      // test that BookmarksService.getAllBookmarks gets data from the table
+  // Populated database tests
+  context(`Given 'bookmarkstable' has data`, () => {
+
+    beforeEach(() => {
+      return db
+        .into('bookmarktable')
+        .insert(testBookmarks)
+    })
+
+    it(`getAllBookmarks() resolves all bookmarks from 'bookmarkstable' table`, () => {
       return BookmarksService.getAllBookmarks(db)
         .then(actual => {
           expect(actual).to.eql(testBookmarks)
+        })
+    })
+
+    it(`getById() resolves a bookmark by id from 'bookmarktable' table`, () => {
+      const secondId = 2
+      const secondTestBookmark = testBookmarks[secondId - 1]
+
+      return BookmarksService.getById(db, secondId)
+        .then(actual => {
+          expect(actual).to.eql({
+            id: secondId,
+            title: secondTestBookmark.title,
+            url: secondTestBookmark.url,
+            description: secondTestBookmark.description,
+            rating: secondTestBookmark.rating,
+          })
+        })
+    })
+
+    it(`deleteBookmark() removes a bookmark by id from 'bookmarktable' table`, () => {
+      const bookmarkId = 2
+
+      return BookmarksService.deleteBookmark(db, bookmarkId)
+        .then(() => BookmarksService.getAllBookmarks(db))
+        .then(allBookmarks => {
+          // copy the test bookmarks array withou tthe 'delete' bookmark
+          const expected = testBookmarks.filter(bookmark => bookmark.id !== bookmarkId)
+
+          expect(allBookmarks).to.eql(expected)
+        })
+    })
+
+    it(`updateBookmark() updates a bookmark from the 'bookmarktable' table`, () => {
+      const idOfBookmarkToUpdate = 2
+      const newBookmarkData = {
+        title: 'updated title',
+        url: 'updataed url',
+        description: 'updated description',
+        rating: 1
+      }
+
+      return BookmarksService.updateBookmark(db, idOfBookmarkToUpdate, newBookmarkData)
+        .then(() => BookmarksService.getById(db, idOfBookmarkToUpdate))
+        .then(bookmark => {
+          expect(bookmark).to.eql({
+            id: idOfBookmarkToUpdate,
+            ...newBookmarkData,
+          })
+        })
+    })
+  })
+
+  // Empty database tests
+  context(`Given 'bookmarkstable' has no data`, () => {
+    it(`getAllBookmarks() resolves to empty array`, () => {
+      return BookmarksService.getAllBookmarks(db)
+        .then(actual => {
+          expect(actual).to.eql([])
+        })
+    })
+
+    it(`insertBookmark() inserts a new bookmark and resolvs the new bookmark with an 'id'`, () => {
+      const newBookmark = {
+        title: "Yahoo",
+        url: "http://www.yahoo.com",
+        description: "Search...",
+        rating: 1
+      }
+
+      return BookmarksService.insertBookmark(db, newBookmark)
+        .then(actual => {
+          expect(actual).to.eql({
+            id: 1,
+            title: newBookmark.title,
+            url: newBookmark.url,
+            description: newBookmark.description,
+            rating: newBookmark.rating,
+          })
         })
     })
   })
