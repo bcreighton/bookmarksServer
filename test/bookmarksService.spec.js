@@ -3,7 +3,7 @@ const { expect } = require('chai')
 const BookmarksService = require('../src/bookmarksService')
 const knex = require('knex')
 
-describe.only('Bookmarks service object', () => {
+describe('Bookmarks service object', () => {
 
   let db
   let testBookmarks = [
