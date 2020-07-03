@@ -1,6 +1,6 @@
 const { expect } = require('chai')
 const knex = require('knex')
-const app = require('../src/app1')
+const app = require('../src/app')
 const supertest = require('supertest')
 const { makeBookmarksArray } = require('./bookmarks.fixture')
 
@@ -27,7 +27,7 @@ describe.only('Bookmarks Endpoints', () => {
       it(`responds with 200 and an empty list`, () => {
         return supertest(app)
           .get('/bookmarks')
-          .set('Authorization', 'Bearer 3eafe11c-b90f-11ea-b3de-0242ac130004')
+          .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
           .expect(200, [])
       })
     })
@@ -44,7 +44,7 @@ describe.only('Bookmarks Endpoints', () => {
       it(`responds with a 200 and all the bookmarks`, () => {
         return supertest(app)
           .get('/bookmarks')
-          .set('Authorization', 'Bearer 3eafe11c-b90f-11ea-b3de-0242ac130004')
+          .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
           .expect(200, testBookmarks)
       })
     })
@@ -58,7 +58,7 @@ describe.only('Bookmarks Endpoints', () => {
 
         return supertest(app)
           .get(`/bookmarks/${bookmarkId}`)
-          .set('Authorization', 'Bearer 3eafe11c-b90f-11ea-b3de-0242ac130004')
+          .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
           .expect(404, { error: { message: `Bookmark does not exist` } })
       })
     })
@@ -76,7 +76,7 @@ describe.only('Bookmarks Endpoints', () => {
         const expectedBookmark = testBookmarks[bookmarkId - 1]
         return supertest(app)
           .get(`/bookmarks/${bookmarkId}`)
-          .set('Authorization', 'Bearer 3eafe11c-b90f-11ea-b3de-0242ac130004')
+          .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
           .expect(200, expectedBookmark)
       })
     })
