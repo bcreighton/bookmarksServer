@@ -37,7 +37,7 @@ app.use(bookmarkRouter)
 
 //GET ROUTES
 app.get('/', (req, res) => {
-  res.send('Hello, bookmarks app 2!')
+  res.send('Hello, bookmarks!')
 })
 
 app.use(function errorHandler(error, req, res, next) {

@@ -17,21 +17,16 @@ bookmarkRouter
       })
       .catch(next)
   })
-  .post(bodyParser, (req, res) => {
-    const { title, url, rating = 1, desc = '' } = req.body
+  .post(bodyParser, (req, res, next) => {
+    const { title, url, rating = 1, description = '' } = req.body
+    const newBookmark = { title, url, rating, description }
 
-    if (!title) {
-      logger.error('Title is required')
-      return res
-        .status(400)
-        .send('Invalid data')
-    }
-
-    if (!url) {
-      logger.error('URL is required')
-      return res
-        .status(400)
-        .send('Invalid data')
+    for (const [key, value] of Object.entries(newBookmark)) {
+      if (value == null) {
+        return res.status(400).json({
+          error: { message: `Missing '${key}' in request body` }
+        })
+      }
     }
 
     if (rating < 1 || rating > 5) {
@@ -41,27 +36,20 @@ bookmarkRouter
         .send('Invalid data')
     }
 
-    // GET NEW ID
-    const id = uuid()
-
-    const bookmark = {
-      id,
-      title,
-      url,
-      rating,
-      desc,
-    }
-
-    //ADD NEW BOOKMARK TO DATA
-    bookmarks.push(bookmark)
-
     // LOG CREATION OF NEW BOOKMARK
-    logger.info(`Bookmark with id ${id} created`)
+    logger.info(`Bookmark with id ${req.params.id} created`)
 
-    res
-      .status(201)
-      .location(`http://localhost:8000/bookmark/${id}`)
-      .json(bookmark)
+    BookmarksService.insertBookmark(
+      req.app.get('db'),
+      newBookmark
+    )
+      .then(bookmark => {
+        res
+          .status(201)
+          .location(`/bookmarks/${bookmark.id}`)
+          .json(bookmark)
+      })
+      .catch(next)
   })
 
 bookmarkRouter

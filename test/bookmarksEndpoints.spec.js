@@ -4,7 +4,7 @@ const app = require('../src/app')
 const supertest = require('supertest')
 const { makeBookmarksArray } = require('./bookmarks.fixture')
 
-describe.only('Bookmarks Endpoints', () => {
+describe('Bookmarks Endpoints', () => {
   let db
   before('make knex instance', () => {
     db = knex({
@@ -46,6 +46,58 @@ describe.only('Bookmarks Endpoints', () => {
           .get('/bookmarks')
           .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
           .expect(200, testBookmarks)
+      })
+    })
+  })
+
+  describe(`POST /bookmarks`, () => {
+    it(`creates a bookmark, responding with a 201 and the new bookmark`, () => {
+
+      const newBookmark = {
+        title: 'Test new bookmark',
+        url: 'http://www.testurl.com',
+        description: 'Test new bookmark description...',
+        rating: 3
+      }
+
+      return supertest(app)
+        .post('/bookmarks')
+        .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
+        .send(newBookmark)
+        .expect(201)
+        .expect(res => {
+          expect(res.body.title).to.eql(newBookmark.title)
+          expect(res.body.url).to.eql(newBookmark.url)
+          expect(res.body.description).to.eql(newBookmark.description)
+          expect(res.body.rating).to.eql(newBookmark.rating)
+          expect(res.body).to.have.property('id')
+          expect(res.headers.location).to.eql(`/bookmarks/${res.body.id}`)
+        })
+        .then(postRes => {
+          supertest(app)
+            .get(`/bookmarks/${postRes.body.id}`)
+            .expect(postRes.body)
+        })
+    })
+
+    const requiredFields = ['title', 'url']
+
+    requiredFields.forEach(requiredField => {
+      const newBookmark = {
+        title: 'Test new bookmark',
+        url: 'http://www.testurl.com'
+      }
+
+      it(`responds with 400 and an error message when the '${requiredField}' is missing`, () => {
+        delete newBookmark[requiredField]
+
+        return supertest(app)
+          .post('/bookmarks')
+          .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
+          .send(newBookmark)
+          .expect(400, {
+            error: { message: `Missing '${requiredField}' in request body` }
+          })
       })
     })
   })
