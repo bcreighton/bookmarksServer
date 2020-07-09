@@ -32,8 +32,9 @@ bookmarkRouter
     if (rating < 1 || rating > 5) {
       logger.error('Raiting must be between 1 and 5')
       return res
-        .status(400)
-        .send('Invalid data')
+        .status(400).json({
+          error: { message: `'${rating}' is an invalid rating` }
+        })
     }
 
     // LOG CREATION OF NEW BOOKMARK

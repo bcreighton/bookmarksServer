@@ -100,6 +100,27 @@ describe('Bookmarks Endpoints', () => {
           })
       })
     })
+
+    const ratings = [0, 6]
+
+    ratings.forEach(rating => {
+      const newBookmark = {
+        title: 'Test new bookmark',
+        url: 'http://www.testurl.com',
+        rating
+      }
+
+      it(`responds with 400 and an error message when rating is not between 1 and 5; rating=${rating}`, () => {
+        return supertest(app)
+          .post('/bookmarks')
+          .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
+          .send(newBookmark)
+          .expect(400, {
+            error: { message: `'${rating}' is an invalid rating` }
+          })
+      })
+
+    })
   })
 
   describe(`GET /bookmarks/:bookmark_id`, () => {
