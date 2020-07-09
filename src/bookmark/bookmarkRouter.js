@@ -1,11 +1,19 @@
 const express = require('express')
+const xss = require('xss')
 const { v4: uuid } = require('uuid')
 const logger = require('../logger')
-const bookmarks = require('../store')
 const BookmarksService = require('../bookmarksService')
 
 const bookmarkRouter = express.Router()
 const bodyParser = express.json()
+
+const serializeBookmark = bookmark => ({
+  id: bookmark.id,
+  title: xss(bookmark.title),
+  url: bookmark.url,
+  rating: bookmark.rating,
+  description: xss(bookmark.description),
+})
 
 bookmarkRouter
   .route('/bookmarks')
@@ -13,7 +21,7 @@ bookmarkRouter
     const knexInstance = req.app.get('db')
     BookmarksService.getAllBookmarks(knexInstance)
       .then(bookmarks => {
-        res.json(bookmarks)
+        res.json(bookmarks.map(serializeBookmark))
       })
       .catch(next)
   })
@@ -48,7 +56,7 @@ bookmarkRouter
         res
           .status(201)
           .location(`/bookmarks/${bookmark.id}`)
-          .json(bookmark)
+          .json(serializeBookmark(bookmark))
       })
       .catch(next)
   })
@@ -65,7 +73,13 @@ bookmarkRouter
             error: { message: `Bookmark does not exist` }
           })
         }
-        res.json(bookmark)
+        res.json({
+          id: bookmark.id,
+          title: xss(bookmark.title),
+          url: bookmark.url,
+          rating: bookmark.rating,
+          description: xss(bookmark.description)
+        })
       })
       .catch(next)
   })

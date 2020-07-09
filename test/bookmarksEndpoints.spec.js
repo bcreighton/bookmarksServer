@@ -2,7 +2,7 @@ const { expect } = require('chai')
 const knex = require('knex')
 const app = require('../src/app')
 const supertest = require('supertest')
-const { makeBookmarksArray } = require('./bookmarks.fixture')
+const { makeBookmarksArray, makeMaliciousBookmark } = require('./bookmarks.fixture')
 
 describe('Bookmarks Endpoints', () => {
   let db
@@ -46,6 +46,27 @@ describe('Bookmarks Endpoints', () => {
           .get('/bookmarks')
           .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
           .expect(200, testBookmarks)
+      })
+    })
+
+    context(`Given an XSS attack bookmark`, () => {
+      const { maliciousBookmark, expectedBookmark } = makeMaliciousBookmark()
+
+      beforeEach('insert malicious article', () => {
+        return db
+          .into('bookmarktable')
+          .insert([maliciousBookmark])
+      })
+
+      it('removes XSS attack content', () => {
+        return supertest(app)
+          .get('/bookmarks')
+          .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
+          .expect(200)
+          .expect(res => {
+            expect(res.body[0].title).to.eql(expectedBookmark.title)
+            expect(res.body.description).to.eql(expectedBookmark.describe)
+          })
       })
     })
   })
@@ -119,7 +140,19 @@ describe('Bookmarks Endpoints', () => {
             error: { message: `'${rating}' is an invalid rating` }
           })
       })
+    })
 
+    it('removes XSS attack content from response', () => {
+      const { maliciousBookmark, expectedBookmark } = makeMaliciousBookmark()
+
+      return supertest(app)
+        .post('/bookmarks')
+        .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
+        .expect(201)
+        .expect(res => {
+          expect(res.body.title).to.eql(expectedBookmark.title)
+          expect(res.body.description).to.eql(expectedBookmark.description)
+        })
     })
   })
 
@@ -151,6 +184,27 @@ describe('Bookmarks Endpoints', () => {
           .get(`/bookmarks/${bookmarkId}`)
           .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
           .expect(200, expectedBookmark)
+      })
+    })
+
+    context(`Given an XSS attack bookmark`, () => {
+      const { maliciousBookmark, expectedBookmark } = makeMaliciousBookmark()
+
+      beforeEach('insert malicious bookmark', () => {
+        return db
+          .into('bookmarktable')
+          .insert([maliciousBookmark])
+      })
+
+      it('removes XSS attack content', () => {
+        return supertest(app)
+          .get(`/bookmarks/${maliciousBookmark.id}`)
+          .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
+          .expect(200)
+          .expect(res => {
+            expect(res.body.title).to.eql(expectedBookmark.title)
+            expect(res.body.description).to.eql(expectedBookmark.description)
+          })
       })
     })
   })
