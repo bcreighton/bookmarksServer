@@ -40,11 +40,6 @@ app.get('/', (req, res) => {
   res.send('Hello, bookmarks!')
 })
 
-app.get('/xss', (req, res) => {
-  res.cookie('secretToken', '1234567890');
-  res.sendFile(__dirname + '/xss.html');
-});
-
 app.use(function errorHandler(error, req, res, next) {
   let response
   if (NODE_ENV === 'production') {
