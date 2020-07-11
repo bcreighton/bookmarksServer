@@ -147,11 +147,11 @@ describe('Bookmarks Endpoints', () => {
           expect(res.body).to.have.property('id')
           expect(res.headers.location).to.eql(`/bookmarks/${res.body.id}`)
         })
-        .then(postRes => {
-          supertest(app)
-            .get(`/bookmarks/${postRes.body.id}`)
-            .expect(postRes.body)
-        })
+        .then(postRes => supertest(app)
+          .get(`/bookmarks/${postRes.body.id}`)
+          .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
+          .expect(postRes.body)
+        )
     })
 
     const requiredFields = ['title', 'url']
