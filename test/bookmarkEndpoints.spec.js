@@ -237,4 +237,21 @@ describe('Bookmarks Endpoints', () => {
       })
     })
   })
+
+  describe.only(`PATCH /api/bookmark/:bookmark_id`, () => {
+    context(`Given no bookmarks`, () => {
+      it(`response with 404`, () => {
+        const bookmarkId = 12345
+
+        return supertest(app)
+          .patch(`/api/bookmark/${bookmarkId}`)
+          .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
+          .expect(404, {
+            error: {
+              message: `Bookmark does not exist`
+            }
+          })
+      })
+    })
+  })
 })
