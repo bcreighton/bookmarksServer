@@ -263,6 +263,19 @@ describe('Bookmarks Endpoints', () => {
           .insert(testBookmarks)
       })
 
+      it(`responds wtih 400 when no required fields supplied`, () => {
+        const idToUpdate = 2
+        return supertest(app)
+          .patch(`/api/bookmark/${idToUpdate}`)
+          .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
+          .send({ irrelevantField: `foo` })
+          .expect(400, {
+            error: {
+              message: `Request body must contain either 'title', 'url', 'description', 'rating'`
+            }
+          })
+      })
+
       it(`responds with 204 and updates the bookmark`, () => {
         const idToUpdate = 2
         const updateBookmark = {
