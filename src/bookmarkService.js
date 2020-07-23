@@ -1,6 +1,6 @@
 const knex = require('knex');
 
-const BookmarksService = {
+const BookmarkService = {
   getAllBookmarks(knex) {
     return knex.select('*').from('bookmarktable')
   },
@@ -36,4 +36,4 @@ const BookmarksService = {
   }
 }
 
-module.exports = BookmarksService;
+module.exports = BookmarkService;

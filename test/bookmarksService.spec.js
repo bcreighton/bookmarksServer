@@ -1,6 +1,6 @@
 const { expect } = require('chai')
 
-const BookmarksService = require('../src/bookmarksService')
+const BookmarkService = require('../src/BookmarkService')
 const knex = require('knex')
 
 describe('Bookmarks service object', () => {
@@ -43,7 +43,7 @@ describe('Bookmarks service object', () => {
   after(() => db.destroy())
 
   // Populated database tests
-  context(`Given 'bookmarkstable' has data`, () => {
+  context(`Given 'bookmarktable' has data`, () => {
 
     beforeEach(() => {
       return db
@@ -52,7 +52,7 @@ describe('Bookmarks service object', () => {
     })
 
     it(`getAllBookmarks() resolves all bookmarks from 'bookmarkstable' table`, () => {
-      return BookmarksService.getAllBookmarks(db)
+      return BookmarkService.getAllBookmarks(db)
         .then(actual => {
           expect(actual).to.eql(testBookmarks)
         })
@@ -62,7 +62,7 @@ describe('Bookmarks service object', () => {
       const secondId = 2
       const secondTestBookmark = testBookmarks[secondId - 1]
 
-      return BookmarksService.getById(db, secondId)
+      return BookmarkService.getById(db, secondId)
         .then(actual => {
           expect(actual).to.eql({
             id: secondId,
@@ -77,8 +77,8 @@ describe('Bookmarks service object', () => {
     it(`deleteBookmark() removes a bookmark by id from 'bookmarktable' table`, () => {
       const bookmarkId = 2
 
-      return BookmarksService.deleteBookmark(db, bookmarkId)
-        .then(() => BookmarksService.getAllBookmarks(db))
+      return BookmarkService.deleteBookmark(db, bookmarkId)
+        .then(() => BookmarkService.getAllBookmarks(db))
         .then(allBookmarks => {
           // copy the test bookmarks array withou tthe 'delete' bookmark
           const expected = testBookmarks.filter(bookmark => bookmark.id !== bookmarkId)
@@ -96,8 +96,8 @@ describe('Bookmarks service object', () => {
         rating: 1
       }
 
-      return BookmarksService.updateBookmark(db, idOfBookmarkToUpdate, newBookmarkData)
-        .then(() => BookmarksService.getById(db, idOfBookmarkToUpdate))
+      return BookmarkService.updateBookmark(db, idOfBookmarkToUpdate, newBookmarkData)
+        .then(() => BookmarkService.getById(db, idOfBookmarkToUpdate))
         .then(bookmark => {
           expect(bookmark).to.eql({
             id: idOfBookmarkToUpdate,
@@ -110,7 +110,7 @@ describe('Bookmarks service object', () => {
   // Empty database tests
   context(`Given 'bookmarkstable' has no data`, () => {
     it(`getAllBookmarks() resolves to empty array`, () => {
-      return BookmarksService.getAllBookmarks(db)
+      return BookmarkService.getAllBookmarks(db)
         .then(actual => {
           expect(actual).to.eql([])
         })
@@ -124,7 +124,7 @@ describe('Bookmarks service object', () => {
         rating: 1
       }
 
-      return BookmarksService.insertBookmark(db, newBookmark)
+      return BookmarkService.insertBookmark(db, newBookmark)
         .then(actual => {
           expect(actual).to.eql({
             id: 1,

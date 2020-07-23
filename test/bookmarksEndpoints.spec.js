@@ -2,7 +2,7 @@ const { expect } = require('chai')
 const knex = require('knex')
 const app = require('../src/app')
 const supertest = require('supertest')
-const { makeBookmarksArray, makeMaliciousBookmark } = require('./bookmarks.fixture')
+const { makeBookmarksArray, makeMaliciousBookmark } = require('./bookmark.fixture')
 
 describe('Bookmarks Endpoints', () => {
   let db
@@ -21,12 +21,12 @@ describe('Bookmarks Endpoints', () => {
 
   afterEach('cleanup', () => db('bookmarktable').truncate())
 
-  describe(`GET /bookmarks`, () => {
+  describe(`GET /api/bookmark`, () => {
 
     context(`Given no bookmarks`, () => {
       it(`responds with 200 and an empty list`, () => {
         return supertest(app)
-          .get('/bookmarks')
+          .get('/api/bookmark')
           .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
           .expect(200, [])
       })
@@ -43,7 +43,7 @@ describe('Bookmarks Endpoints', () => {
 
       it(`responds with a 200 and all the bookmarks`, () => {
         return supertest(app)
-          .get('/bookmarks')
+          .get('/api/bookmark')
           .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
           .expect(200, testBookmarks)
       })
@@ -60,7 +60,7 @@ describe('Bookmarks Endpoints', () => {
 
       it('removes XSS attack content', () => {
         return supertest(app)
-          .get('/bookmarks')
+          .get('/api/bookmark')
           .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
           .expect(200)
           .expect(res => {
@@ -71,14 +71,14 @@ describe('Bookmarks Endpoints', () => {
     })
   })
 
-  describe(`GET /bookmarks/:bookmark_id`, () => {
+  describe(`GET /api/bookmark/:bookmark_id`, () => {
 
     context(`Given no bookmarks`, () => {
       it(`responds with 404`, () => {
         const bookmarkId = 123456
 
         return supertest(app)
-          .get(`/bookmarks/${bookmarkId}`)
+          .get(`/api/bookmark/${bookmarkId}`)
           .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
           .expect(404, { error: { message: `Bookmark does not exist` } })
       })
@@ -92,11 +92,11 @@ describe('Bookmarks Endpoints', () => {
           .insert(testBookmarks)
       })
 
-      it(`GET /bookmarks/:bookmark_id response with 200 and returns the specified bookmark`, () => {
+      it(`GET /api/bookmark/:bookmark_id response with 200 and returns the specified bookmark`, () => {
         const bookmarkId = 2
         const expectedBookmark = testBookmarks[bookmarkId - 1]
         return supertest(app)
-          .get(`/bookmarks/${bookmarkId}`)
+          .get(`/api/bookmark/${bookmarkId}`)
           .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
           .expect(200, expectedBookmark)
       })
@@ -113,7 +113,7 @@ describe('Bookmarks Endpoints', () => {
 
       it('removes XSS attack content', () => {
         return supertest(app)
-          .get(`/bookmarks/${maliciousBookmark.id}`)
+          .get(`/api/bookmark/${maliciousBookmark.id}`)
           .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
           .expect(200)
           .expect(res => {
@@ -124,7 +124,7 @@ describe('Bookmarks Endpoints', () => {
     })
   })
 
-  describe(`POST /bookmarks`, () => {
+  describe(`POST /api/bookmark`, () => {
     it(`creates a bookmark, responding with a 201 and the new bookmark`, () => {
 
       const newBookmark = {
@@ -135,7 +135,7 @@ describe('Bookmarks Endpoints', () => {
       }
 
       return supertest(app)
-        .post('/bookmarks')
+        .post('/api/bookmark')
         .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
         .send(newBookmark)
         .expect(201)
@@ -145,10 +145,10 @@ describe('Bookmarks Endpoints', () => {
           expect(res.body.description).to.eql(newBookmark.description)
           expect(res.body.rating).to.eql(newBookmark.rating)
           expect(res.body).to.have.property('id')
-          expect(res.headers.location).to.eql(`/bookmarks/${res.body.id}`)
+          expect(res.headers.location).to.eql(`/api/bookmark/${res.body.id}`)
         })
         .then(postRes => supertest(app)
-          .get(`/bookmarks/${postRes.body.id}`)
+          .get(`/api/bookmark/${postRes.body.id}`)
           .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
           .expect(postRes.body)
         )
@@ -166,7 +166,7 @@ describe('Bookmarks Endpoints', () => {
         delete newBookmark[requiredField]
 
         return supertest(app)
-          .post('/bookmarks')
+          .post('/api/bookmark')
           .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
           .send(newBookmark)
           .expect(400, {
@@ -186,7 +186,7 @@ describe('Bookmarks Endpoints', () => {
 
       it(`responds with 400 and an error message when rating is not between 1 and 5; rating=${rating}`, () => {
         return supertest(app)
-          .post('/bookmarks')
+          .post('/api/bookmark')
           .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
           .send(newBookmark)
           .expect(400, {
@@ -199,7 +199,7 @@ describe('Bookmarks Endpoints', () => {
       const { maliciousBookmark, expectedBookmark } = makeMaliciousBookmark()
 
       return supertest(app)
-        .post('/bookmarks')
+        .post('/api/bookmark')
         .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
         .send(maliciousBookmark)
         .expect(201)
@@ -210,7 +210,7 @@ describe('Bookmarks Endpoints', () => {
     })
   })
 
-  describe(`DELETE /bookmarks/:bookmark_id`, () => {
+  describe(`DELETE /api/bookmark/:bookmark_id`, () => {
     context(`Given there are bookmarks in the database`, () => {
       const testBookmarks = makeBookmarksArray()
 
@@ -225,12 +225,12 @@ describe('Bookmarks Endpoints', () => {
         const expectedBookmarks = testBookmarks.filter(bookmark => bookmark.id !== idToRemove)
 
         return supertest(app)
-          .delete(`/bookmarks/${idToRemove}`)
+          .delete(`/api/bookmark/${idToRemove}`)
           .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
           .expect(204)
           .then(res =>
             supertest(app)
-              .get(`/bookmarks`)
+              .get(`/api/bookmark`)
               .set('Authorization', 'Bearer e6848008-9534-4836-8fa1-65e042e4c11f')
               .expect(expectedBookmarks)
           )
