@@ -9,7 +9,7 @@ describe('Bookmarks Endpoints', () => {
   before('make knex instance', () => {
     db = knex({
       client: 'pg',
-      connection: process.env.TEST_DB_URL,
+      connection: process.env.TEST_DATABASE_URL,
     })
 
     app.set('db', db)
@@ -238,7 +238,7 @@ describe('Bookmarks Endpoints', () => {
     })
   })
 
-  describe.only(`PATCH /api/bookmark/:bookmark_id`, () => {
+  describe(`PATCH /api/bookmark/:bookmark_id`, () => {
     context(`Given no bookmarks`, () => {
       it(`response with 404`, () => {
         const bookmarkId = 12345
