@@ -19,6 +19,7 @@ const serializeBookmark = bookmark => ({
 bookmarkRouter
   .route('/api/bookmark')
   .get((req, res, next) => {
+    debugger
     const knexInstance = req.app.get('db')
     BookmarkService.getAllBookmarks(knexInstance)
       .then(bookmarks => {
@@ -27,6 +28,7 @@ bookmarkRouter
       .catch(next)
   })
   .post(bodyParser, (req, res, next) => {
+    debugger
     const { title, url, rating = 1, description = '' } = req.body
     const newBookmark = { title, url, rating, description }
 
