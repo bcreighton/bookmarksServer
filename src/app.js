@@ -39,6 +39,14 @@ app.use(bookmarkRouter)
 app.get('/', (req, res) => {
   res.send('Hello, bookmarks!')
 })
+app.get('/api/test', (req, res) => {
+  res.send('Hello, api!')
+})
+app.get('/api/return', (req, res) => {
+  res.send('returning!')
+})
+
+
 
 app.use(function errorHandler(error, req, res, next) {
   let response
