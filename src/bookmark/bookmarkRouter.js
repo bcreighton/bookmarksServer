@@ -19,7 +19,6 @@ const serializeBookmark = bookmark => ({
 bookmarkRouter
   .route('/api/bookmark')
   .get((req, res, next) => {
-    debugger
     const knexInstance = req.app.get('db')
     BookmarkService.getAllBookmarks(knexInstance)
       .then(bookmarks => {
